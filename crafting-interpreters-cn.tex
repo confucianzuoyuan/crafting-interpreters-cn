@@ -22,7 +22,12 @@
 \newcommand{\ccr}[1]{\makecell{{\color{#1}\rule{1cm}{1cm}}}}
 
 \usepackage[newfloat]{minted}
+\usemintedstyle{xcode}
 \usepackage{tcolorbox}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{colortbl}
+\tcbuselibrary{skins}
 \BeforeBeginEnvironment{minted}{\begin{tcolorbox}[breakable]}%
 \AfterEndEnvironment{minted}{\end{tcolorbox}}%
 
@@ -33,6 +38,20 @@
 
 \definecolor{customcolor}{RGB}{32,178,170}
 \colorlet{coverlinecolor}{customcolor}
+
+\definecolor{Salmon}{RGB}{250,128,114}
+
+\newcolumntype{Y}{>{\raggedleft\arraybackslash}X}
+
+\tcbset{tab1/.style={fonttitle=\bfseries\large,fontupper=\normalsize\sffamily,
+colback=yellow!10!white,colframe=red!75!black,colbacktitle=Salmon!40!white,
+coltitle=black,center title,freelance,frame code={
+\foreach \n in {north east,north west,south east,south west}
+{\path [fill=red!75!black] (interior.\n) circle (3mm); };},}}
+
+\tcbset{tab2/.style={enhanced,fonttitle=\bfseries,fontupper=\normalsize\sffamily,
+colback=yellow!10!white,colframe=red!50!black,colbacktitle=Salmon!40!white,
+coltitle=black,center title}}
 
 \begin{document}
 
@@ -1080,7 +1099,7 @@ baconAndToast.serve("Dear Reader");
 
 \subsection{继承}
 
-每一门面向对象编程语言都不仅仅只是能定义方法，还需要在不同的类和对象中可以复用这些方法。所以，Lox支持单继承。当你定义了一个类，你还可以指定另一个类来继承这个类，我们这里使用了小于号 `<` 来表示继承关系。
+每一门面向对象编程语言都不仅仅只是能定义方法，还需要在不同的类和对象中可以复用这些方法。所以，Lox支持单继承。当你定义了一个类，你还可以指定另一个类来继承这个类，我们这里使用了小于号\colorbox{gray}{<}\footnote{为什么使用 \colorbox{gray}{<} 运算符？因为我不想引入像 \colorbox{gray}{extends} 这样的新的关键字。由于Lox并没有使用过 \colorbox{gray}{:} 冒号，所以这里也不想使用。最终我选择了Ruby中表示继承的符号，也就是小于号 \colorbox{gray}{<} 。 \\ 如果你懂一点类型系统理论，你会发现继承符号的选择并不是一个完全随意的事情。每一个子类的实例同时也是超类的实例。但是超类的实例不一定是子类的实例。这就意味着，在对象的世界里，子类的对象所组成的集合比超类的对象所组成的集合要小，当然，玩类型系统的黑客喜欢用 \colorbox{gray}{<:} 表示继承关系。}来表示继承关系。
 
 \begin{minted}{js}
 class Brunch < Breakfast {
@@ -1089,12 +1108,6 @@ class Brunch < Breakfast {
   }
 }
 \end{minted}
-
-\begin{tcolorbox}
-为什么使用 \colorbox{gray}{<} 运算符？因为我不想引入像 \colorbox{gray}{extends} 这样的新的关键字。由于Lox并没有使用过 \colorbox{gray}{:} 冒号，所以这里也不想使用。最终我选择了Ruby中表示继承的符号，也就是小于号 \colorbox{gray}{<} 。
-
-如果你懂一点类型系统理论，你会发现继承符号的选择并不是一个完全随意的事情。每一个子类的实例同时也是超类的实例。但是超类的实例不一定是子类的实例。这就意味着，在对象的世界里，子类的对象所组成的集合比超类的对象所组成的集合要小，当然，玩类型系统的黑客喜欢用 \colorbox{gray}{<:} 表示继承关系。
-\end{tcolorbox}
 
 在这里，上午餐（Brunch）是派生类（derived class）或者子类（subclass），而早餐（Breakfast）是基类（base class）或者超类（superclass）。
 
@@ -1107,11 +1120,7 @@ benedict.serve("Noble Reader");
 
 即使是init ()方法也可以被继承。在实践中，子类通常也会定义它自己的init ()方法。但
 是超类的init ()方法也需要调用啊，这样超类就可以维护它自己的状态。我们需要在子类
-实例化的时候来调用超类的init ()方法，但又不会破坏子类的init ()方法。
-
-\begin{tcolorbox}
-Lox不同于C++，Java和C\# ，这些语言并不会继承超类的构造器。Lox像Smalltalk和Ruby一样，子类会继承超类的构造器。
-\end{tcolorbox}
+实例化的时候来调用超类的init ()方法，但又不会破坏子类的init ()方法\footnote{Lox不同于C++，Java和C\# ，这些语言并不会继承超类的构造器。Lox像Smalltalk和Ruby一样，子类会继承超类的构造器。}。
 
 在Java中，我们使用super关键字来初始化超类。
 
@@ -1174,7 +1183,7 @@ puts 1 + if true then 2 else 3 end + 4
 
 将每一个语句都转换成表达式迫使你需要回答上面这些诡异的问题。作为回报，你消除了某些冗余情况。C既有对于顺序语句的块语法，也有对于顺序表达式的逗号操作符。C语言既有if语句也有?:条件运算符。如果在C语言中一切都是表达式的话，我们就需要把它们统一起来。
 
-将语句这一特性去掉的语言通常都会有**隐式的返回值（implicit returns）**这样的特性——一个函数将会返回函数体的求值结果，而不需要显式的return语法。对于一些小的函数和方法，这样做是非常方便的。实际上，很多有语句的语言都会添加一些类似于=>的语法来定义函数，函数体是求值一个单独的表达式的结果。
+将语句这一特性去掉的语言通常都会有\textbf{隐式的返回值（implicit returns）}这样的特性——一个函数将会返回函数体的求值结果，而不需要显式的return语法。对于一些小的函数和方法，这样做是非常方便的。实际上，很多有语句的语言都会添加一些类似于=>的语法来定义函数，函数体是求值一个单独的表达式的结果。
 
 但如果所有的函数都是像上一段说的那样工作的话，会有一点奇怪。如果你不小心的话，你的函数可能会泄露出一个返回值，而你想做的可能仅仅是产生一个副作用（side effect）。但在实践中，这些语言的用户似乎没觉得是个问题。
 
@@ -1361,6 +1370,193 @@ Lox是一种脚本语言，这意味着它直接从源代码执行。我们的�
 
 \chapter{对表达式进行语法分析}
 
+\epigraph{连国王也受语法的统治。}{\textit{莫里哀}}
+
+这一章将是本书第一个重要的里程碑。我们已将正则表达式和字符串操作拼凑在一起， 来提取一堆文本中的含义。这些代码大概率充满了bug并且难以维护。写一个真正的解析器——具有良好的错误处理、逻辑清晰的内部结构和可靠地处理复杂语法的能力——被认为是一项高超的技艺。在这一章，你将会获得这种能力。
+
+“Parse（语法分析）”这个词来自古法语“pars”，意思是“词性”。它的意思是把每个单词映射到语言的语法。这里也取这个含义，只是我们的语言比古法语现代了一点。
+
+和本书的其他概念一样，在学习完后，你将发现它不是那么的令人生畏。
+
+这比你想象中的更简单，一部分原因是我们把一些困难的工作前置到上一章了。你已经掌握了形式文法，你已经熟悉了语法树，并且我们已经有了表示它们的Java类。我们剩下的唯一任务就是解析（parsing）——把词法单元序列转换成语法树。
+
+一些计算机科学的教科书话费了大量的力气来讨论语法分析器。在60年代，计算机科学家们——可以理解地厌倦了用汇编写程序——开始设计更复杂，更人性化的语言，比如Fortran、ALGOL。可惜，这些语言对当时原始的计算机并不友好。
+
+试想，在那些老机器上编写汇编是有多折磨，才能让他们把Fortran当成一种进步。
+
+在甚至不知道应该怎样写编译器的时候，这些先驱设计了编程语言，进行了开创性的工作，发明了可以在那些古老的小型机器上处理这些新型大型语言的解析和编译技术。
+
+经典的编译器书籍就像是为这些英雄和他们的工具写的传记。《编译原理》的封面：一个写着“编译器设计复杂度（complexity of compiler design）”的龙被一个骑士打倒，这个骑士的盾牌上刻着“自底向上解析器生成器（LALR parser generator）”和 “语法制导翻译（syntax directed translation）”。这些书会花大力气来讨论这些内容。
+
+有一点点的自满是当之无愧的, 但实际上，构建一个能在现代计算机上运行的优秀解析器并不需要这么多高深的知识。和往常一样，我希望你能在以后学习这些来扩展视野，但是不是现在。
+
+\section{二义性和语法分析游戏}
+
+在上一章，我们把“上下文无关文法”当成生成各种字符串的“游戏”。而解析器就是倒着玩这个游戏：给定一个字符串——一个词法单元组成的序列，按文法规则把词法单元映射成终结符号，来找到哪个文法规则能生成这个字符串。
+
+“能生成”这个词很微妙，一种有二义性的文法规则是完全有可能存在的，这种情况下，不同的文法规则可以得到相同的字符串。这在生成字符串时是无关紧要的，只要得到了，谁管是怎么来的？
+
+但在语法分析中，二义性却意味着解析器可能会错误理解代码。分析时，我们不仅要判断代码是否合法，而且还要确定哪条规则对应着这段代码，这样才能确定每个词法单元在语言中的具体含义。这个是上一章的Lox表达式文法：
+
+\begin{minted}{ebnf}
+expression     = literal
+               | unary
+               | binary
+               | grouping ;
+
+literal        = NUMBER | STRING | "true" | "false" | "nil" ;
+grouping       = "(" expression ")" ;
+unary          = ( "-" | "!" ) expression ;
+binary         = expression operator expression ;
+operator       = "==" | "!=" | "<" | "<=" | ">" | ">="
+               | "+"  | "-"  | "*" | "/" ;
+\end{minted}
+
+这是一个符合文法规则的符号串：
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{image/parsing-expressions/tokens.png}
+\end{figure}
+
+但是我们有两种可以生成这个符号串的方式。一种是：
+
+\begin{enumerate}
+  \item 选择 binary 生成顶层的 expression。
+  \item 选择 NUMBER, 即 6， 生成左边的 expression。
+  \item 选择 "/" 作为运算符。
+  \item 再次选择 binary 生成右边的 expression。
+  \item 用 3 - 1 生成嵌套的 binary 表达式。
+\end{enumerate}
+
+另一个是：
+
+\begin{enumerate}
+  \item 选择 binary 生成顶层的 expression。
+  \item 再次选择 binary 生成左边的 expression。
+  \item 用 6 / 3 生成嵌套的 binary 表达式。
+  \item 返回上一层 binary，用 "/" 作为运算符
+  \item 选择 NUMBER, 即 1， 生成右边的 expression。
+\end{enumerate}
+
+它们生成了同一个符号串，但它们不是同一棵语法树
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{image/parsing-expressions/syntax-trees.png}
+\end{figure}
+
+换句话说，这个文法允许我们有两种理解表达式方式： (6 / 3) - 1 或 6 / (3 - 1) 。 binary 规则允许运算分量随意嵌套， 这让我们得到了两种语法树。 在黑板发明的时候， 数学家们就已通过定义优先级和结合性来解决这个问题。
+
+\begin{itemize}
+  \item \textbf{优先级}决定不同运算符混合时哪个运算符先计算。 根据优先级规则，在上个例子中，/ 应该比 - 先计算。 高优先级的运算符 应该比低优先级的运算符先计算。 换句话说，高优先级的运算符“结合得更紧密”。
+  \item \textbf{结合性}决定了相同优先级的运算符哪个先计算。 运算符是左结合 （想想从左到右）时，左边的运算符在右边的运算符之前计算。 因为 - 是左结合的，下面一个表达式
+  \begin{tcolorbox}
+    5 - 3 - 1
+  \end{tcolorbox}
+  等价于：
+  \begin{tcolorbox}
+    (5 - 3) - 1
+  \end{tcolorbox}
+  相反，赋值是\textbf{右结合}的。例如：
+  \begin{tcolorbox}
+    a = b = c
+  \end{tcolorbox}
+  等价于：
+  \begin{tcolorbox}
+    a = (b = c)
+  \end{tcolorbox}
+\end{itemize}
+
+尽管不常见，一些语言钦定某些运算符没有相对优先级，于是，如果表达式含有这些运算符却没有用括号明确指定优先级，就会出现语法错误。
+
+类似的，一些运算符是没有结合性的，换句话说，这种运算符不能在同一优先级层次中出现两次，比如 Perl 范围运算符，a .. b 是正确的，但 a .. b .. c 是错误的。
+
+如果没有良好定义的优先级和结合性，含多个运算符的表达式就有二义性——它可以被解析为不同的语法树，进而计算出不同的结果。为了解决这个问题，我们选择在 Lox 中使用和 C 语言相同的优先级规则，从低到高依次是：
+
+\begin{tcolorbox}[tab2,tabularx={X||Y|Y}]
+名称 & 运算符 & 结合性 \\\hline\hline
+相等性 & == != & 左 \\\hline
+比较 & > >= < <= & 左 \\\hline
+项 & - + & 左 \\\hline
+因子 & / * & 左 \\\hline
+单目 & ! - & 右
+\end{tcolorbox}
+
+截至目前，我们的文法把各种类型的表达式都塞进一个 expression 产生式， 而且，这个产生式也被当作运算分量的非终结符号， 这让文法可以接受任何表达式作为子表达式， 不管是否符合优先级规则。
+
+我们通过把文法分层来解决这个问题， 即为每个的优先级都定义一个产生式。
+
+\begin{minted}{ebnf}
+expression     = ...
+equality       = ...
+comparison     = ...
+term           = ...
+factor         = ...
+unary          = ...
+primary        = ...
+\end{minted}
+
+除了把优先级直接写入文法规则， 一些解析器生成器可以通过另外附加优先级规则消除二义性， 这样， 我们就能继续使用这种简单却有二义性的文法。
+
+每个规则只匹配和它相同或更高优先级的表达式， 举个例子，unary 可以匹配一个单目表达式，比如 !negated，或者一个 primary 表达式，像 1234； term 同时可以匹配 1 + 2 和 3 * 4 / 5。 最终的 primary 规则，包含了最高优先级的两个形式—— 字面量和括号表达式。
+
+我们现在只需把这些规则对应到产生式。 从最简单的开始，最上层的 expression 应匹配任何优先级的表达式。 因为 equality 有最低的优先级， 所以我们匹配它就能覆盖所有情况。
+
+在包含表达式的产生式（如 if）中， 用 equality 替代 expression 也是可行的， 但是使用 expression 让这些文法规则看起来更漂亮。
+
+而且，我们之后会把赋值和逻辑运算符加入表达式中， 如果我们使用在这些文法规则中使用 expression 而不是 equality， 我们只需要更改 expression 本身的产生式而不用改变其他产生式。
+
+\begin{minted}{ebnf}
+expression     = equality
+\end{minted}
+
+在优先级表格的另一端， primary 表达式包含了所有字面量和带括号表达式。
+
+\begin{minted}{ebnf}
+primary        = NUMBER | STRING | "true" | "false" | "nil"
+               | "(" expression ")" ;
+\end{minted}
+
+单目表达式由单目运算符和运算分量组成。 考虑到单目运算符可以嵌套——比如 !!true 就是一个合法但令人困惑的表达式， 运算分量也可以是一个单目表达式，我们用一个递归的规则处理这种情况。
+
+\begin{minted}{ebnf}
+unary          = ( "!" | "-" ) unary ;
+\end{minted}
+
+但是这个规则有一个问题，它永不终结。
+
+记住，每个产生式需要匹配和自己同级或更高优先级的表达式， 所以，它要匹配 primary 表达式。
+
+\begin{minted}{ebnf}
+unary          = ( "!" | "-" ) unary
+               | primary ;
+\end{minted}
+
+看起来不错。
+
+剩下的都是二元运算符。 先试试乘法和除法：
+
+\begin{minted}{ebnf}
+factor         = factor ( "/" | "*" ) unary
+               | unary ;
+\end{minted}
+
+这个生成式递归地匹配左运算分量，于是， 像 1 * 2 / 3 这样的连续乘除法的表达式就能被正确的匹配。 把递归产生式放在左边，把 unary 在右边， 让表达式既有左结合性，又没有二义性。
+
+理论上，乘法左结合还是右结合无关紧要——两种方式产生相同的结果。 可惜，现实世界中只存在精度有限的数字， 四舍五入和溢出意味着结合性可以影响运算的结果。 考虑：
+
+\begin{minted}{js}
+print 0.1 * (0.2 * 0.3);
+print (0.1 * 0.2) * 0.3;
+\end{minted}
+
+很多语言像 Lox 一样使用 IEEE 754 双浮点数， 第一个式子的结果是 0.006， 但第二个结果是 0.006000000000000001。 有时这种微小的误差会造成巨大的影响。你可以从这里获得更多信息。
+
+上面的一切都是正确的，但需要注意，这个产生式是\textbf{左递归}的， 即这个产生式的头就是这个产生式体的第一个符号， 一些分析技术，包括我们现在正在用的分析技术， 并不能正确的处理左递归。 （不同地方的递归，比如 unary，比如括号表达式能重新成为 primary 的间接递归，不会产生问题。）
+
+\section{递归下降语法分析}
+
 \part{一个字节码虚拟机的实现}
 
 我们用Java实现的解释器jlox，教会了我们很多编程语言方面的基础知识，但我们还有很多东西需要学习。首先，如果你在jlox上运行任何复杂一点的Lox程序，你会发现运行速度非常慢。我们解释器的实现方式——直接遍历抽象语法树——对于一些应用场景完全够用了，但对于一门通用脚本语言，仍然有非常多的场景是不够用的。
@@ -1457,7 +1653,7 @@ CPU会一条一条的执行指令，也就是从内存中读取指令，然后�
 
 假设你在编写一个源语言的编译器，直接编译到机器码。而你正好有权力来设计你要编译到的机器码的体系结构。你会怎么设计呢？你肯定会设计出一种最容易生成的机器码。字节码就是这样的设计。字节码是一种理想的指令集，让你的编译器编写工作更加轻松。
 
-理想的体系结构所存在的问题是什么呢？问题就是它是现实中不存在的体系结构。我们需要编写*模拟器（emulator）*来解决这个问题。模拟器是一个仿真芯片，也就是说它是一个软件。模拟器会解释执行字节码，也就是每次执行一条字节码。你也可以把模拟器叫做虚拟机（virtual machine）。
+理想的体系结构所存在的问题是什么呢？问题就是它是现实中不存在的体系结构。我们需要编写\textit{模拟器（emulator）}来解决这个问题。模拟器是一个仿真芯片，也就是说它是一个软件。模拟器会解释执行字节码，也就是每次执行一条字节码。你也可以把模拟器叫做虚拟机（virtual machine）。
 
 模拟器这一层增加了一些开销，这个中间层是字节码比原生机器码执行起来更加慢的关键原因。作为回报，字节码给了我们强大的可移植性。使用C语言来编写我们的虚拟机，可以让我们的虚拟机（模拟器）运行在所有的硬件上面。因为几乎所有的硬件都有C语言的编译器。
 
